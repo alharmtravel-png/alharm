@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام محاسبة السياحة والسفر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#132523;
+  --teal-950:#0B2C2B;
+  --teal-900:#0F3D3E;
+  --teal-700:#1B5E5A;
+  --teal-500:#2C8A82;
+  --gold:#C9A227;
+  --gold-soft:#E7CD73;
+  --paper:#F7F5F0;
+  --card:#FFFFFF;
+  --line:#E4DFD3;
+  --muted:#6B7570;
+  --good:#2E7D5B;
+  --bad:#B3452C;
+  --warn:#B8862B;
+  --shadow: 0 1px 2px rgba(15,61,62,.06), 0 8px 24px rgba(15,61,62,.06);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Tajawal', sans-serif;
+  min-height:100vh;
+}
+h1,h2,h3,h4,.disp{font-family:'Cairo', sans-serif;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:#D6CFBE;border-radius:8px;}
+
+#app{min-height:100vh;display:flex;flex-direction:column;}
+
+/* Top bar */
+.topbar{
+  background:linear-gradient(180deg,var(--teal-950),var(--teal-900));
+  color:#EFEAE0;
+  padding:14px 22px;
+  display:flex;align-items:center;gap:18px;
+  position:sticky;top:0;z-index:40;
+  box-shadow:0 4px 18px rgba(11,44,43,.25);
+}
+.brand{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.brand-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:conic-gradient(from 220deg, var(--gold), var(--gold-soft), var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cairo';font-weight:800;color:var(--teal-950);font-size:16px;
+}
+.brand-name{font-family:'Cairo';font-weight:700;font-size:15px;letter-spacing:.2px;}
+.brand-sub{font-size:11px;color:#B9CFCB;margin-top:-2px;}
+
+.tabs{display:flex;gap:4px;flex-wrap:wrap;}
+.tab-btn{
+  background:transparent;border:none;color:#CFE3DF;
+  padding:9px 16px;border-radius:9px;font-weight:600;font-size:14.5px;
+  transition:.15s;display:flex;align-items:center;gap:8px;
+}
+.tab-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+.tab-btn.active{background:var(--gold);color:var(--teal-950);}
+
+.content{flex:1;padding:22px;max-width:1360px;margin:0 auto;width:100%;}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);}
+.card-pad{padding:18px 20px;}
+.section-title{font-family:'Cairo';font-weight:800;font-size:19px;color:var(--teal-950);margin:0 0 4px;}
+.section-sub{color:var(--muted);font-size:13px;margin:0 0 16px;}
+
+/* KPI grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:20px;}
+.kpi{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.kpi::before{content:"";position:absolute;top:0;right:0;width:5px;height:100%;background:var(--teal-500);}
+.kpi.gold::before{background:var(--gold);}
+.kpi.bad::before{background:var(--bad);}
+.kpi.good::before{background:var(--good);}
+.kpi-label{font-size:12.5px;color:var(--muted);font-weight:600;}
+.kpi-val{font-family:'Cairo';font-weight:800;font-size:22px;color:var(--teal-950);margin-top:6px;}
+.kpi-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;font-size:12.5px;color:var(--muted);}
+
+/* Buttons */
+.btn{
+  border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:14px;
+  display:inline-flex;align-items:center;gap:8px;transition:.15s;
+}
+.btn-primary{background:var(--teal-900);color:#fff;}
+.btn-primary:hover{background:var(--teal-700);}
+.btn-gold{background:var(--gold);color:var(--teal-950);}
+.btn-gold:hover{background:var(--gold-soft);}
+.btn-outline{background:transparent;color:var(--teal-900);border:1.5px solid var(--line);}
+.btn-outline:hover{border-color:var(--teal-500);}
+.btn-danger{background:#fff;color:var(--bad);border:1.5px solid #ECD3CA;}
+.btn-danger:hover{background:#FBEEEA;}
+.btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{
+  text-align:right;color:var(--muted);font-weight:700;font-size:12px;
+  padding:10px 12px;border-bottom:2px solid var(--line);white-space:nowrap;
+}
+td{padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+tr:hover td{background:#FAF9F5;}
+.table-wrap{overflow-x:auto;}
+.row-click{cursor:pointer;}
+
+.badge{
+  display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;
+  font-size:11.5px;font-weight:700;
+}
+.badge-new{background:#E9EEF0;color:#3F5457;}
+.badge-confirmed{background:#E3F0EA;color:var(--good);}
+.badge-partial{background:#FBF1DC;color:var(--warn);}
+.badge-paid{background:#DFF3E8;color:var(--good);}
+.badge-cancel{background:#FBE7E2;color:var(--bad);}
+.badge-return{background:#F0E6F5;color:#7A4FA0;}
+
+.pill{background:#EFF6F4;color:var(--teal-700);border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:12.5px;font-weight:700;color:var(--teal-900);}
+.field input,.field select,.field textarea{
+  border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;background:#fff;color:var(--ink);
+  outline:none;transition:.15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(44,138,130,.12);}
+.field textarea{resize:vertical;min-height:60px;}
+.field small{color:var(--muted);font-size:11px;}
+.form-section-h{
+  font-family:'Cairo';font-weight:800;color:var(--teal-950);font-size:14.5px;
+  margin:22px 0 10px;padding-bottom:8px;border-bottom:2px solid var(--gold-soft);
+  display:flex;align-items:center;gap:8px;
+}
+.form-section-h:first-child{margin-top:0;}
+
+/* Modal */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(11,44,43,.45);backdrop-filter:blur(2px);
+  display:flex;align-items:flex-start;justify-content:center;z-index:100;padding:30px 16px;overflow-y:auto;
+}
+.modal{
+  background:#fff;border-radius:16px;max-width:900px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);
+  animation:pop .15s ease-out;
+}
+@keyframes pop{from{transform:translateY(8px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-head{
+  display:flex;justify-content:space-between;align-items:center;padding:18px 22px;
+  border-bottom:1px solid var(--line);
+}
+.modal-head h3{margin:0;font-size:17px;color:var(--teal-950);}
+.modal-body{padding:20px 22px;max-height:70vh;overflow-y:auto;}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-start;gap:10px;}
+.icon-x{background:none;border:none;font-size:18px;color:var(--muted);padding:4px 8px;border-radius:6px;}
+.icon-x:hover{background:#F1EEE6;}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;justify-content:space-between;}
+.search-box{
+  border:1.5px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px;min-width:220px;background:#fff;
+}
+.filters{display:flex;gap:8px;flex-wrap:wrap;}
+.filters select, .filters input{border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;background:#fff;}
+
+.chip-group{display:flex;gap:6px;background:#EFEBE1;padding:4px;border-radius:10px;}
+.chip{border:none;background:transparent;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;color:var(--teal-900);}
+.chip.active{background:var(--teal-900);color:#fff;}
+
+.stat-line{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;}
+.stat-line:last-child{border-bottom:none;}
+.stat-line b{font-family:'Cairo';color:var(--teal-950);}
+
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;}
+.crumbs{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-bottom:12px;}
+.crumbs a{color:var(--teal-700);text-decoration:none;font-weight:700;cursor:pointer;}
+.crumbs a:hover{text-decoration:underline;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+.profit-box{
+  background:linear-gradient(135deg,var(--teal-950),var(--teal-700));
+  color:#EAF3F1;border-radius:14px;padding:18px 20px;
+}
+.profit-box .kpi-val{color:#fff;}
+.profit-box .kpi-label{color:#BFD8D3;}
+
+.mini{font-size:11.5px;color:var(--muted);}
+.right{margin-right:auto;}
+.flex{display:flex;align-items:center;}
+.gap8{gap:8px;}
+.mt10{margin-top:10px;}
+.mb0{margin-bottom:0;}
+.w100{width:100%;}
+.divider{height:1px;background:var(--line);margin:16px 0;}
+.loading-screen{display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Cairo';color:var(--teal-900);font-weight:700;}
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:var(--teal-950);color:#fff;padding:11px 20px;border-radius:10px;font-size:13.5px;font-weight:700;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:200;
+}
+@media print{
+  .topbar,.toolbar,.no-print,.btn{display:none !important;}
+  body{background:#fff;}
+  .content{padding:0;max-width:100%;}
+  .card{box-shadow:none;border:1px solid #ccc;}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading-screen">جارِ تحميل النظام…</div></div>
+
+<script>
+/* ============================= DATA LAYER ============================= */
+const STORAGE_KEY = 'travel_erp_db_v1';
+const CURRENCIES = ['EGP','USD','SAR'];
+const CUR_LABEL = {EGP:'جنيه مصري (EGP)', USD:'دولار أمريكي (USD)', SAR:'ريال سعودي (SAR)'};
+const CUR_SYMBOL = {EGP:'ج.م', USD:'$', SAR:'ر.س'};
+const SERVICE_TYPES = ['تذكرة طيران','فندق','تأشيرة','نقل','عمرة','باقة سياحية','خدمة أخرى'];
+const SUPPLIER_TYPES = ['شركة طيران','فندق','شركة نقل','وكيل سياحي','شركة تأشيرات','مورد آخر'];
+const PAY_METHODS = ['نقدي','تحويل بنكي','بطاقة','أخرى'];
+const STATUSES = ['جديد','مؤكد','مدفوع جزئياً','مدفوع بالكامل','ملغي','مسترجع'];
+const STATUS_BADGE = {
+  'جديد':'badge-new','مؤكد':'badge-confirmed','مدفوع جزئياً':'badge-partial',
+  'مدفوع بالكامل':'badge-paid','ملغي':'badge-cancel','مسترجع':'badge-return'
+};
+
+let DB = null;
+let SAVING = false;
+
+function emptyDB(){
+  return { clients:[], suppliers:[], bookings:[], counters:{client:1,supplier:1,booking:1} };
+}
+
+async function loadDB(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value){ DB = JSON.parse(res.value); }
+    else { DB = emptyDB(); }
+  }catch(e){ DB = emptyDB(); }
+  if(!DB.counters) DB.counters = {client:1,supplier:1,booking:1};
+}
+
+async function saveDB(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(DB), false);
+  }catch(e){ console.error('storage save failed', e); showToast('تعذر حفظ البيانات، حاول مرة أخرى'); }
+}
+
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,10); }
+
+function nextCode(type, prefix){
+  const n = DB.counters[type]++;
+  return prefix + String(n).padStart(4,'0');
+}
+
+/* ============================= HELPERS ============================= */
+function fmt(n){
+  n = Number(n)||0;
+  return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function money(n, cur){
+  return `${fmt(n)} ${CUR_SYMBOL[cur]||cur||''}`;
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(d){
+  if(!d) return '-';
+  const dt = new Date(d);
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString('ar-EG',{year:'numeric',month:'2-digit',day:'2-digit'});
+}
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function getClient(id){ return DB.clients.find(c=>c.id===id); }
+function getSupplier(id){ return DB.suppliers.find(s=>s.id===id); }
+function getBooking(id){ return DB.bookings.find(b=>b.id===id); }
+
+function clientPayments(b){ return b.payments.filter(p=>p.type==='client'); }
+function supplierPayments(b){ return b.payments.filter(p=>p.type==='supplier'); }
+function bookingSalePaid(b){ return clientPayments(b).reduce((s,p)=>s+Number(p.amount||0),0); }
+function bookingPurchasePaid(b){ return supplierPayments(b).reduce((s,p)=>s+Number(p.amount||0),0); }
+
+function bookingProfit(b){
+  const sale = Number(b.saleAmount||0);
+  const purchase = Number(b.purchaseAmount||0);
+  if(b.saleCurrency === b.purchaseCurrency){
+    return { profit: sale - purchase, currency: b.saleCurrency, saleConverted: sale, rate: 1, sameCurrency:true };
+  }
+  const rate = Number(b.exchangeRate || 0);
+  const saleConverted = sale * rate;
+  return { profit: saleConverted - purchase, currency: b.purchaseCurrency, saleConverted, rate, sameCurrency:false };
+}
+
+function activeBookings(list){ return list.filter(b=>b.status!=='ملغي'); }
+
+function clientBalanceMap(clientId){
+  const map = {};
+  const ensure = c=>{ if(!map[c]) map[c] = {sale:0, paid:0}; return map[c]; };
+  activeBookings(DB.bookings.filter(b=>b.clientId===clientId)).forEach(b=>{
+    ensure(b.saleCurrency).sale += Number(b.saleAmount||0);
+    clientPayments(b).forEach(p=> ensure(p.currency||b.saleCurrency).paid += Number(p.amount||0));
+  });
+  Object.keys(map).forEach(c=> map[c].due = map[c].sale - map[c].paid);
+  return map;
+}
+function supplierBalanceMap(supplierId){
+  const map = {};
+  const ensure = c=>{ if(!map[c]) map[c] = {purchase:0, paid:0}; return map[c]; };
+  activeBookings(DB.bookings.filter(b=>b.supplierId===supplierId)).forEach(b=>{
+    ensure(b.purchaseCurrency).purchase += Number(b.purchaseAmount||0);
+    supplierPayments(b).forEach(p=> ensure(p.currency||b.purchaseCurrency).paid += Number(p.amount||0));
+  });
+  Object.keys(map).forEach(c=> map[c].due = map[c].purchase - map[c].paid);
+  return map;
+}
+
+function showToast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 2200);
+}
+
+/* ============================= ROUTER STATE ============================= */
+let STATE = {
+  tab: 'dashboard',
+  clientDetailId: null,
+  supplierDetailId: null,
+  bookingDetailId: null,
+  dashPeriod: 'month',
+  dashCustomFrom: todayStr(),
+  dashCustomTo: todayStr(),
+  clientSearch: '',
+  supplierSearch: '',
+  bookingSearch: '',
+  bookingFilters: { status:'', serviceType:'', currency:'', from:'', to:'' },
+  reportType: 'sales',
+  reportFilters: { from:'', to:'', clientId:'', supplierId:'', serviceType:'', currency:'', status:'' },
+};
+
+function setTab(tab){
+  STATE.tab = tab;
+  STATE.clientDetailId = null;
+  STATE.supplierDetailId = null;
+  STATE.bookingDetailId = null;
+  render();
+}
+function go(tab, id){
+  STATE.tab = tab;
+  if(tab==='client-detail') STATE.clientDetailId = id;
+  if(tab==='supplier-detail') STATE.supplierDetailId = id;
+  if(tab==='booking-detail') STATE.bookingDetailId = id;
+  render();
+  window.scrollTo(0,0);
+}
+
+/* ============================= PERIOD RANGE ============================= */
+function periodRange(){
+  const now = new Date();
+  let from, to;
+  if(STATE.dashPeriod==='today'){
+    from = to = todayStr();
+  } else if(STATE.dashPeriod==='week'){
+    const d = new Date(now);
+    const day = d.getDay(); // 0 sunday
+    d.setDate(d.getDate()-day);
+    from = d.toISOString().slice(0,10);
+    to = todayStr();
+  } else if(STATE.dashPeriod==='month'){
+    from = new Date(now.getFullYear(), now.getMonth(),1).toISOString().slice(0,10);
+    to = todayStr();
+  } else {
+    from = STATE.dashCustomFrom; to = STATE.dashCustomTo;
+  }
+  return {from, to};
+}
+function inRange(dateStr, from, to){
+  if(!dateStr) return false;
+  return dateStr >= from && dateStr <= to;
+}
+
+/* ============================= RENDER: SHELL ============================= */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="tabs">
+        ${tabBtn('dashboard','الرئيسية')}
+        ${tabBtn('clients','العملاء')}
+        ${tabBtn('suppliers','الموردين')}
+        ${tabBtn('bookings','الحجوزات')}
+        ${tabBtn('reports','التقارير')}
+      </div>
+      <div class="brand">
+        <div>
+          <div class="brand-name">نظام محاسبة السفر</div>
+          <div class="brand-sub">إدارة الحجوزات والعملاء والموردين</div>
+        </div>
+        <div class="brand-mark">سف</div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  `;
+  const c = document.getElementById('content');
+  const activeTab = STATE.tab.split('-')[0]==='client' && STATE.tab==='client-detail' ? 'clients'
+    : STATE.tab==='supplier-detail' ? 'suppliers'
+    : STATE.tab==='booking-detail' || STATE.tab==='booking-form' ? 'bookings'
+    : STATE.tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===activeTab);
+  });
+
+  if(STATE.tab==='dashboard') c.innerHTML = renderDashboard();
+  else if(STATE.tab==='clients') c.innerHTML = renderClients();
+  else if(STATE.tab==='client-detail') c.innerHTML = renderClientDetail(STATE.clientDetailId);
+  else if(STATE.tab==='suppliers') c.innerHTML = renderSuppliers();
+  else if(STATE.tab==='supplier-detail') c.innerHTML = renderSupplierDetail(STATE.supplierDetailId);
+  else if(STATE.tab==='bookings') c.innerHTML = renderBookings();
+  else if(STATE.tab==='booking-detail') c.innerHTML = renderBookingDetail(STATE.bookingDetailId);
+  else if(STATE.tab==='reports') c.innerHTML = renderReports();
+}
+function tabBtn(id,label){
+  return `<button class="tab-btn" data-tab="${id}" onclick="setTab('${id}')">${label}</button>`;
+}
+
+/* ============================= DASHBOARD ============================= */
+function renderDashboard(){
+  const {from,to} = periodRange();
+  const periodBookings = DB.bookings.filter(b=>inRange(b.date, from, to));
+  const activePeriod = periodBookings.filter(b=>b.status!=='ملغي');
+
+  const sales = {}, purchases = {}, profits = {}, collected = {}, paidOut = {};
+  activePeriod.forEach(b=>{
+    sales[b.saleCurrency] = (sales[b.saleCurrency]||0) + Number(b.saleAmount||0);
+    purchases[b.purchaseCurrency] = (purchases[b.purchaseCurrency]||0) + Number(b.purchaseAmount||0);
+    const p = bookingProfit(b);
+    profits[p.currency] = (profits[p.currency]||0) + p.profit;
+  });
+  DB.bookings.forEach(b=>{
+    b.payments.forEach(p=>{
+      if(!inRange(p.date, from, to)) return;
+      if(p.type==='client') collected[p.currency] = (collected[p.currency]||0) + Number(p.amount||0);
+      else paidOut[p.currency] = (paidOut[p.currency]||0) + Number(p.amount||0);
+    });
+  });
+
+  // overall due (not period-limited)
+  const dueClient = {}, dueSupplier = {};
+  DB.clients.forEach(c=>{
+    const m = clientBalanceMap(c.id);
+    Object.keys(m).forEach(cur=> dueClient[cur] = (dueClient[cur]||0) + m[cur].due);
+  });
+  DB.suppliers.forEach(s=>{
+    const m = supplierBalanceMap(s.id);
+    Object.keys(m).forEach(cur=> dueSupplier[cur] = (dueSupplier[cur]||0) + m[cur].due);
+  });
+
+  const currList = Array.from(new Set([...Object.keys(sales),...Object.keys(purchases),...Object.keys(profits)]));
+
+  function kpiCurrencyCard(title, dataMap, cls){
+    const keys = Object.keys(dataMap);
+    return `<div class="kpi ${cls||''}">
+      <div class="kpi-label">${title}</div>
+      ${keys.length===0 ? `<div class="kpi-val" style="font-size:15px;color:var(--muted)">لا يوجد</div>` :
+        keys.map(cur=>`<div class="kpi-row"><span>${cur}</span><b style="color:var(--teal-950)">${fmt(dataMap[cur])}</b></div>`).join('')}
+    </div>`;
+  }
+
+  const recentBookings = [...DB.bookings].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,6);
+  const allPayments = [];
+  DB.bookings.forEach(b=> b.payments.forEach(p=> allPayments.push({...p, bookingId:b.id, bookingNumber:b.number,
+    who: p.type==='client' ? (getClient(b.clientId)||{}).name : (getSupplier(b.supplierId)||{}).name })));
+  const recentPayments = allPayments.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,6);
+
+  return `
+    <div class="toolbar">
+      <div>
+        <h2 class="section-title" style="margin-bottom:2px">لوحة التحكم</h2>
+        <div class="section-sub mb0">نظرة عامة على أداء الشركة</div>
+      </div>
+      <div class="chip-group no-print">
+        ${['today','week','month','custom'].map(p=>`
+          <button class="chip ${STATE.dashPeriod===p?'active':''}" onclick="STATE.dashPeriod='${p}';render()">
+            ${p==='today'?'اليوم':p==='week'?'هذا الأسبوع':p==='month'?'هذا الشهر':'فترة مخصصة'}
+          </button>`).join('')}
+      </div>
+    </div>
+    ${STATE.dashPeriod==='custom' ? `
+      <div class="flex gap8 no-print" style="margin-bottom:16px">
+        <div class="field"><label>من تاريخ</label><input type="date" value="${STATE.dashCustomFrom}" onchange="STATE.dashCustomFrom=this.value;render()"></div>
+        <div class="field"><label>إلى تاريخ</label><input type="date" value="${STATE.dashCustomTo}" onchange="STATE.dashCustomTo=this.value;render()"></div>
+      </div>` : ''}
+
+    <div class="kpi-grid">
+      ${kpiCurrencyCard('إجمالي المبيعات', sales, 'gold')}
+      ${kpiCurrencyCard('إجمالي المشتريات', purchases)}
+      ${kpiCurrencyCard('إجمالي الأرباح', profits, 'good')}
+      <div class="kpi">
+        <div class="kpi-label">عدد الحجوزات (الفترة)</div>
+        <div class="kpi-val">${periodBookings.length}</div>
+        <div class="kpi-row"><span>إجمالي كل الحجوزات</span><b>${DB.bookings.length}</b></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      ${kpiCurrencyCard('المبالغ المحصلة من العملاء (الفترة)', collected, 'good')}
+      ${kpiCurrencyCard('المبالغ المدفوعة للموردين (الفترة)', paidOut)}
+    </div>
+    <div style="height:14px"></div>
+    <div class="grid-2">
+      ${kpiCurrencyCard('المبالغ المستحقة على العملاء (إجمالي)', dueClient, 'bad')}
+      ${kpiCurrencyCard('المبالغ المستحقة للموردين (إجمالي)', dueSupplier, 'bad')}
+    </div>
+
+    <div style="height:20px"></div>
+    <div class="grid-2">
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:16px">آخر الحجوزات</h3>
+        ${recentBookings.length===0 ? `<div class="empty">لا توجد حجوزات بعد</div>` : `
+        <div class="table-wrap"><table>
+          <thead><tr><th>رقم الحجز</th><th>العميل</th><th>الخدمة</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+          <tbody>
+          ${recentBookings.map(b=>`
+            <tr class="row-click" onclick="go('booking-detail','${b.id}')">
+              <td><b>${b.number}</b></td>
+              <td>${esc((getClient(b.clientId)||{}).name||'-')}</td>
+              <td>${b.serviceType}</td>
+              <td><span class="badge ${STATUS_BADGE[b.status]}">${b.status}</span></td>
+              <td>${fmtDate(b.date)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>`}
+      </div>
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:16px">آخر عمليات التحصيل والدفع</h3>
+        ${recentPayments.length===0 ? `<div class="empty">لا توجد عمليات مالية بعد</div>` : `
+        <div class="table-wrap"><table>
+          <thead><tr><th>النوع</th><th>الجهة</th><th>المبلغ</th><th>الطريقة</th><th>التاريخ</th></tr></thead>
+          <tbody>
+          ${recentPayments.map(p=>`
+            <tr class="row-click" onclick="go('booking-detail','${p.bookingId}')">
+              <td><span class="pill">${p.type==='client'?'تحصيل':'دفع'}</span></td>
+              <td>${esc(p.who||'-')}</td>
+              <td>${money(p.amount,p.currency)}</td>
+              <td>${p.method}</td>
+              <td>${fmtDate(p.date)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>`}
+      </div>
+    </div>
+  `;
+}
+
+/* ============================= CLIENTS ============================= */
+function renderClients(){
+  const q = STATE.clientSearch.trim().toLowerCase();
+  const list = DB.clients.filter(c=>!q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || (c.phone||'').includes(q));
+  return `
+    <div class="toolbar">
+      <div><h2 class="section-title">العملاء</h2><div class="section-sub mb0">إدارة بيانات العملاء وحساباتهم</div></div>
+      <div class="flex gap8">
+        <input class="search-box" placeholder="بحث بالاسم أو الكود أو الهاتف" value="${esc(STATE.clientSearch)}" oninput="STATE.clientSearch=this.value;render()">
+        <button class="btn btn-gold" onclick="openClientForm()">+ عميل جديد</button>
+      </div>
+    </div>
+    <div class="card">
+      ${list.length===0 ? `<div class="empty">لا يوجد عملاء بعد. اضغط "+ عميل جديد" للبدء.</div>` : `
+      <div class="table-wrap"><table>
+        <thead><tr><th>الكود</th><th>الاسم</th><th>الهاتف</th><th>العملة</th><th>مستحق عليه</th><th></th></tr></thead>
+        <tbody>
+        ${list.map(c=>{
+          const bal = clientBalanceMap(c.id);
+          const dueStr = Object.keys(bal).length ? Object.keys(bal).map(cur=>money(bal[cur].due,cur)).join(' / ') : '—';
+          return `<tr class="row-click" onclick="go('client-detail','${c.id}')">
+            <td><b>${c.code}</b></td>
+            <td>${esc(c.name)}</td>
+            <td>${esc(c.phone||'-')}</td>
+            <td><span class="pill">${c.currency}</span></td>
+            <td>${dueStr}</td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="openClientForm('${c.id}')">تعديل</button></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+  `;
+}
+
+function openClientForm(id){
+  const c = id ? getClient(id) : null;
+  const body = `
+    <div class="form-grid">
+      <div class="field"><label>اسم العميل *</label><input id="f_name" value="${esc(c?c.name:'')}"></div>
+      <div class="field"><label>رقم الهاتف</label><input id="f_phone" value="${esc(c?c.phone:'')}"></div>
+      <div class="field"><label>البريد الإلكتروني</label><input id="f_email" value="${esc(c?c.email:'')}"></div>
+      <div class="field"><label>العملة الأساسية *</label>
+        <select id="f_currency">${CURRENCIES.map(cur=>`<option value="${cur}" ${c&&c.currency===cur?'selected':''}>${CUR_LABEL[cur]}</option>`).join('')}</select>
+      </div>
+      <div class="field" style="grid-column:1/-1"><label>العنوان</label><input id="f_address" value="${esc(c?c.address:'')}"></div>
+      <div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="f_notes">${esc(c?c.notes:'')}</textarea></div>
+    </div>
+  `;
+  openModal(c?'تعديل بيانات العميل':'إضافة عميل جديد', body, [
+    {label: c?'حفظ التعديلات':'إضافة العميل', cls:'btn-gold', onClick: ()=>{
+      const name = document.getElementById('f_name').value.trim();
+      if(!name){ showToast('يرجى إدخال اسم العميل'); return false; }
+      const data = {
+        name,
+        phone: document.getElementById('f_phone').value.trim(),
+        email: document.getElementById('f_email').value.trim(),
+        currency: document.getElementById('f_currency').value,
+        address: document.getElementById('f_address').value.trim(),
+        notes: document.getElementById('f_notes').value.trim(),
+      };
+      if(c){ Object.assign(c, data); }
+      else {
+        DB.clients.push({ id: uid('cl'), code: nextCode('client','CL-'), createdAt: new Date().toISOString(), ...data });
+      }
+      saveDB(); closeModal(); render(); showToast('تم حفظ بيانات العميل');
+    }},
+    {label:'إلغاء', cls:'btn-outline', onClick: ()=>{ closeModal(); return false; }}
+  ]);
+}
+
+function renderClientDetail(id){
+  const c = getClient(id);
+  if(!c) return `<div class="empty">العميل غير موجود</div>`;
+  const bookings = DB.bookings.filter(b=>b.clientId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const bal = clientBalanceMap(id);
+  const payments = [];
+  bookings.forEach(b=> clientPayments(b).forEach(p=> payments.push({...p, bookingNumber:b.number, bookingId:b.id})));
+  payments.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  // statement (ledger): all sale charges + payments chronologically per currency
+  const ledgerRows = [];
+  bookings.forEach(b=>{
+    ledgerRows.push({date:b.date, desc:`حجز رقم ${b.number} - ${b.serviceType}`, debit:Number(b.saleAmount||0), credit:0, currency:b.saleCurrency, status:b.status});
+    clientPayments(b).forEach(p=> ledgerRows.push({date:p.date, desc:`دفعة (${p.method})`, debit:0, credit:Number(p.amount||0), currency:p.currency}));
+  });
+  ledgerRows.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+
+  return `
+    <div class="crumbs"><a onclick="setTab('clients')">العملاء</a> <span>/</span> <span>${esc(c.name)}</span></div>
+    <div class="toolbar">
+      <div>
+        <h2 class="section-title">${esc(c.name)} <span class="pill">${c.code}</span></h2>
+        <div class="section-sub mb0">${esc(c.phone||'')} ${c.email?(' • '+esc(c.email)):''}</div>
+      </div>
+      <div class="flex gap8">
+        <button class="btn btn-outline" onclick="openClientForm('${c.id}')">تعديل البيانات</button>
+        <button class="btn btn-gold" onclick="openBookingForm(null,'${c.id}')">+ حجز جديد لهذا العميل</button>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">إجمالي الحجوزات</div><div class="kpi-val">${bookings.length}</div></div>
+      <div class="kpi gold"><div class="kpi-label">إجمالي المبيعات</div>
+        ${Object.keys(bal).length? Object.keys(bal).map(cur=>`<div class="kpi-row"><span>${cur}</span><b>${fmt(bal[cur].sale)}</b></div>`).join(''):'<div class="mini">لا يوجد</div>'}
+      </div>
+      <div class="kpi good"><div class="kpi-label">إجمالي المدفوع</div>
+        ${Object.keys(bal).length? Object.keys(bal).map(cur=>`<div class="kpi-row"><span>${cur}</span><b>${fmt(bal[cur].paid)}</b></div>`).join(''):'<div class="mini">لا يوجد</div>'}
+      </div>
+      <div class="kpi bad"><div class="kpi-label">الرصيد المستحق</div>
+        ${Object.keys(bal).length? Object.keys(bal).map(cur=>`<div class="kpi-row"><span>${cur}</span><b>${fmt(bal[cur].due)}</b></div>`).join(''):'<div class="mini">لا يوجد</div>'}
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-pad">
+        <div class="flex" style="justify-content:space-between"><h3 class="section-title" style="font-size:16px">حجوزات العميل</h3></div>
+        ${bookings.length===0?`<div class="empty">لا توجد حجوزات</div>`:`
+        <div class="table-wrap"><table>
+          <thead><tr><th>رقم</th><th>الخدمة</th><th>القيمة</th><th>المتبقي</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+          <tbody>${bookings.map(b=>{
+            const paid = bookingSalePaid(b);
+            const remain = Number(b.saleAmount||0)-paid;
+            return `<tr class="row-click" onclick="go('booking-detail','${b.id}')">
+              <td><b>${b.number}</b></td><td>${b.serviceType}</td>
+              <td>${money(b.saleAmount,b.saleCurrency)}</td>
+              <td>${money(remain,b.saleCurrency)}</td>
+              <td><span class="badge ${STATUS_BADGE[b.status]}">${b.status}</span></td>
+              <td>${fmtDate(b.date)}</td></tr>`;
+          }).join('')}</tbody>
+        </table></div>`}
+      </div>
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:16px">دفعات العميل</h3>
+        ${payments.length===0?`<div class="empty">لا توجد دفعات</div>`:`
+        <div class="table-wrap"><table>
+          <thead><tr><th>التاريخ</th><th>المبلغ</th><th>الطريقة</th><th>حجز</th></tr></thead>
+          <tbody>${payments.map(p=>`<tr class="row-click" onclick="go('booking-detail','${p.bookingId}')">
+            <td>${fmtDate(p.date)}</td><td>${money(p.amount,p.currency)}</td><td>${p.method}</td><td>${p.bookingNumber}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`}
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+    <div class="card card-pad">
+      <h3 class="section-title" style="font-size:16px">كشف حساب العميل</h3>
+      ${ledgerRows.length===0?`<div class="empty">لا توجد حركات</div>`:`
+      <div class="table-wrap"><table>
+        <thead><tr><th>التاريخ</th><th>البيان</th><th>مدين (عليه)</th><th>دائن (له)</th><th>العملة</th></tr></thead>
+        <tbody>${ledgerRows.map(r=>`<tr>
+          <td>${fmtDate(r.date)}</td><td>${esc(r.desc)}</td>
+          <td>${r.debit? fmt(r.debit):'-'}</td><td>${r.credit? fmt(r.credit):'-'}</td><td>${r.currency}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>
+  `;
+}
+
+/* ============================= SUPPLIERS ============================= */
+function renderSuppliers(){
+  const q = STATE.supplierSearch.trim().toLowerCase();
+  const list = DB.suppliers.filter(s=>!q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q));
+  return `
+    <div class="toolbar">
+      <div><h2 class="section-title">الموردين</h2><div class="section-sub mb0">إدارة بيانات الموردين وحساباتهم</div></div>
+      <div class="flex gap8">
+        <input class="search-box" placeholder="بحث بالاسم أو الكود" value="${esc(STATE.supplierSearch)}" oninput="STATE.supplierSearch=this.value;render()">
+        <button class="btn btn-gold" onclick="openSupplierForm()">+ مورد جديد</button>
+      </div>
+    </div>
+    <div class="card">
+      ${list.length===0?`<div class="empty">لا يوجد موردين بعد. اضغط "+ مورد جديد" للبدء.</div>`:`
+      <div class="table-wrap"><table>
+        <thead><tr><th>الكود</th><th>الاسم</th><th>النوع</th><th>العملة</th><th>مستحق له</th><th></th></tr></thead>
+        <tbody>
+        ${list.map(s=>{
+          const bal = supplierBalanceMap(s.id);
+          const dueStr = Object.keys(bal).length ? Object.keys(bal).map(cur=>money(bal[cur].due,cur)).join(' / ') : '—';
+          return `<tr class="row-click" onclick="go('supplier-detail','${s.id}')">
+            <td><b>${s.code}</b></td><td>${esc(s.name)}</td><td>${s.type}</td>
+            <td><span class="pill">${s.currency}</span></td><td>${dueStr}</td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="openSupplierForm('${s.id}')">تعديل</button></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+  `;
+}
+
+function openSupplierForm(id){
+  const s = id ? getSupplier(id) : null;
+  const body = `
+    <div class="form-grid">
+      <div class="field"><label>اسم المورد *</label><input id="f_name" value="${esc(s?s.name:'')}"></div>
+      <div class="field"><label>رقم الهاتف</label><input id="f_phone" value="${esc(s?s.phone:'')}"></div>
+      <div class="field"><label>البريد الإلكتروني</label><input id="f_email" value="${esc(s?s.email:'')}"></div>
+      <div class="field"><label>نوع المورد *</label>
+        <select id="f_type">${SUPPLIER_TYPES.map(t=>`<option ${s&&s.type===t?'selected':''}>${t}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>العملة الأساسية *</label>
+        <select id="f_currency">${CURRENCIES.map(cur=>`<option value="${cur}" ${s&&s.currency===cur?'selected':''}>${CUR_LABEL[cur]}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>بيانات الحساب البنكي</label><input id="f_bank" value="${esc(s?s.bank:'')}"></div>
+      <div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="f_notes">${esc(s?s.notes:'')}</textarea></div>
+    </div>
+  `;
+  openModal(s?'تعديل بيانات المورد':'إضافة مورد جديد', body, [
+    {label: s?'حفظ التعديلات':'إضافة المورد', cls:'btn-gold', onClick: ()=>{
+      const name = document.getElementById('f_name').value.trim();
+      if(!name){ showToast('يرجى إدخال اسم المورد'); return false; }
+      const data = {
+        name,
+        phone: document.getElementById('f_phone').value.trim(),
+        email: document.getElementById('f_email').value.trim(),
+        type: document.getElementById('f_type').value,
+        currency: document.getElementById('f_currency').value,
+        bank: document.getElementById('f_bank').value.trim(),
+        notes: document.getElementById('f_notes').value.trim(),
+      };
+      if(s){ Object.assign(s, data); }
+      else {
+        DB.suppliers.push({ id: uid('sp'), code: nextCode('supplier','SP-'), createdAt: new Date().toISOString(), ...data });
+      }
+      saveDB(); closeModal(); render(); showToast('تم حفظ بيانات المورد');
+    }},
+    {label:'إلغاء', cls:'btn-outline', onClick: ()=>{ closeModal(); return false; }}
+  ]);
+}
+
+function renderSupplierDetail(id){
+  const s = getSupplier(id);
+  if(!s) return `<div class="empty">المورد غير موجود</div>`;
+  const bookings = DB.bookings.filter(b=>b.supplierId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const bal = supplierBalanceMap(id);
+  const payments = [];
+  bookings.forEach(b=> supplierPayments(b).forEach(p=> payments.push({...p, bookingNumber:b.number, bookingId:b.id})));
+  payments.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  const ledgerRows = [];
+  bookings.forEach(b=>{
+    ledgerRows.push({date:b.date, desc:`حجز رقم ${b.number} - ${b.serviceType}`, debit:Number(b.purchaseAmount||0), credit:0, currency:b.purchaseCurrency});
+    supplierPayments(b).forEach(p=> ledgerRows.push({date:p.date, desc:`دفعة (${p.method})`, debit:0, credit:Number(p.amount||0), currency:p.currency}));
+  });
+  ledgerRows.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+
+  return `
+    <div class="crumbs"><a onclick="setTab('suppliers')">الموردين</a> <span>/</span> <span>${esc(s.name)}</span></div>
+    <div class="toolbar">
+      <div>
+        <h2 class="section-title">${esc(s.name)} <span class="pill">${s.code}</span></h2>
+        <div class="section-sub mb0">${s.type} ${s.phone?(' • '+esc(s.phone)):''}</div>
+      </div>
+      <div class="flex gap8">
+        <button class="btn btn-outline" onclick="openSupplierForm('${s.id}')">تعديل البيانات</button>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">إجمالي المشتريات</div>
+        ${Object.keys(bal).length? Object.keys(bal).map(cur=>`<div class="kpi-row"><span>${cur}</span><b>${fmt(bal[cur].purchase)}</b></div>`).join(''):'<div class="mini">لا يوجد</div>'}
+      </div>
+      <div class="kpi good"><div class="kpi-label">إجمالي المدفوع</div>
+        ${Object.keys(bal).length? Object.keys(bal).map(cur=>`<div class="kpi-row"><span>${cur}</span><b>${fmt(bal[cur].paid)}</b></div>`).join(''):'<div class="mini">لا يوجد</div>'}
+      </div>
+      <div class="kpi bad"><div class="kpi-label">الرصيد المستحق</div>
+        ${Object.keys(bal).length? Object.keys(bal).map(cur=>`<div class="kpi-row"><span>${cur}</span><b>${fmt(bal[cur].due)}</b></div>`).join(''):'<div class="mini">لا يوجد</div>'}
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:16px">الحجوزات المرتبطة</h3>
+        ${bookings.length===0?`<div class="empty">لا توجد حجوزات</div>`:`
+        <div class="table-wrap"><table>
+          <thead><tr><th>رقم</th><th>الخدمة</th><th>القيمة</th><th>المتبقي</th><th>الحالة</th></tr></thead>
+          <tbody>${bookings.map(b=>{
+            const paid = bookingPurchasePaid(b);
+            const remain = Number(b.purchaseAmount||0)-paid;
+            return `<tr class="row-click" onclick="go('booking-detail','${b.id}')">
+              <td><b>${b.number}</b></td><td>${b.serviceType}</td>
+              <td>${money(b.purchaseAmount,b.purchaseCurrency)}</td>
+              <td>${money(remain,b.purchaseCurrency)}</td>
+              <td><span class="badge ${STATUS_BADGE[b.status]}">${b.status}</span></td></tr>`;
+          }).join('')}</tbody>
+        </table></div>`}
+      </div>
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:16px">دفعات المورد</h3>
+        ${payments.length===0?`<div class="empty">لا توجد دفعات</div>`:`
+        <div class="table-wrap"><table>
+          <thead><tr><th>التاريخ</th><th>المبلغ</th><th>الطريقة</th><th>حجز</th></tr></thead>
+          <tbody>${payments.map(p=>`<tr class="row-click" onclick="go('booking-detail','${p.bookingId}')">
+            <td>${fmtDate(p.date)}</td><td>${money(p.amount,p.currency)}</td><td>${p.method}</td><td>${p.bookingNumber}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`}
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+    <div class="card card-pad">
+      <h3 class="section-title" style="font-size:16px">كشف حساب المورد</h3>
+      ${ledgerRows.length===0?`<div class="empty">لا توجد حركات</div>`:`
+      <div class="table-wrap"><table>
+        <thead><tr><th>التاريخ</th><th>البيان</th><th>مدين</th><th>دائن</th><th>العملة</th></tr></thead>
+        <tbody>${ledgerRows.map(r=>`<tr>
+          <td>${fmtDate(r.date)}</td><td>${esc(r.desc)}</td>
+          <td>${r.debit? fmt(r.debit):'-'}</td><td>${r.credit? fmt(r.credit):'-'}</td><td>${r.currency}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>
+  `;
+}
+
+/* ============================= BOOKINGS LIST ============================= */
+function renderBookings(){
+  const q = STATE.bookingSearch.trim().toLowerCase();
+  const f = STATE.bookingFilters;
+  let list = DB.bookings.filter(b=>{
+    const client = getClient(b.clientId), supplier = getSupplier(b.supplierId);
+    if(q && !( (b.number||'').toLowerCase().includes(q) || (client&&client.name.toLowerCase().includes(q)) || (supplier&&supplier.name.toLowerCase().includes(q)) )) return false;
+    if(f.status && b.status!==f.status) return false;
+    if(f.serviceType && b.serviceType!==f.serviceType) return false;
+    if(f.currency && b.saleCurrency!==f.currency && b.purchaseCurrency!==f.currency) return false;
+    if(f.from && b.date < f.from) return false;
+    if(f.to && b.date > f.to) return false;
+    return true;
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  return `
+    <div class="toolbar">
+      <div><h2 class="section-title">الحجوزات</h2><div class="section-sub mb0">إدارة جميع حجوزات الشركة</div></div>
+      <button class="btn btn-gold" onclick="openBookingForm()">+ إضافة حجز جديد</button>
+    </div>
+    <div class="toolbar" style="margin-top:-6px">
+      <input class="search-box" placeholder="بحث برقم الحجز أو اسم العميل/المورد" value="${esc(STATE.bookingSearch)}" oninput="STATE.bookingSearch=this.value;render()">
+      <div class="filters">
+        <select onchange="STATE.bookingFilters.status=this.value;render()">
+          <option value="">كل الحالات</option>
+          ${STATUSES.map(s=>`<option ${f.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <select onchange="STATE.bookingFilters.serviceType=this.value;render()">
+          <option value="">كل الخدمات</option>
+          ${SERVICE_TYPES.map(s=>`<option ${f.serviceType===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <select onchange="STATE.bookingFilters.currency=this.value;render()">
+          <option value="">كل العملات</option>
+          ${CURRENCIES.map(c=>`<option value="${c}" ${f.currency===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+        <input type="date" value="${f.from}" onchange="STATE.bookingFilters.from=this.value;render()">
+        <input type="date" value="${f.to}" onchange="STATE.bookingFilters.to=this.value;render()">
+      </div>
+    </div>
+    <div class="card">
+      ${list.length===0?`<div class="empty">لا توجد حجوزات مطابقة</div>`:`
+      <div class="table-wrap"><table>
+        <thead><tr><th>رقم الحجز</th><th>التاريخ</th><th>الخدمة</th><th>العميل</th><th>المورد</th><th>البيع</th><th>الشراء</th><th>الحالة</th></tr></thead>
+        <tbody>
+        ${list.map(b=>`<tr class="row-click" onclick="go('booking-detail','${b.id}')">
+          <td><b>${b.number}</b></td>
+          <td>${fmtDate(b.date)}</td>
+          <td>${b.serviceType}</td>
+          <td>${esc((getClient(b.clientId)||{}).name||'-')}</td>
+          <td>${esc((getSupplier(b.supplierId)||{}).name||'-')}</td>
+          <td>${money(b.saleAmount,b.saleCurrency)}</td>
+          <td>${money(b.purchaseAmount,b.purchaseCurrency)}</td>
+          <td><span class="badge ${STATUS_BADGE[b.status]}">${b.status}</span></td>
+        </tr>`).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+  `;
+}
+
+/* ============================= BOOKING FORM (create) ============================= */
+function openBookingForm(bookingId, presetClientId){
+  const editing = bookingId ? getBooking(bookingId) : null;
+  const formId = 'bookingForm_'+Date.now();
+
+  const body = `
+  <div id="${formId}">
+    <div class="form-section-h">📋 بيانات الحجز</div>
+    <div class="form-grid">
+      <div class="field"><label>رقم الحجز</label><input value="${editing?editing.number:'(تلقائي عند الحفظ)'}" disabled></div>
+      <div class="field"><label>تاريخ الحجز *</label><input type="date" id="bf_date" value="${editing?editing.date:todayStr()}"></div>
+      <div class="field"><label>تاريخ الخدمة</label><input type="date" id="bf_serviceDate" value="${editing?editing.serviceDate||'':''}"></div>
+      <div class="field"><label>نوع الخدمة *</label><select id="bf_serviceType">${SERVICE_TYPES.map(s=>`<option ${editing&&editing.serviceType===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>حالة الحجز</label><select id="bf_status">${STATUSES.map(s=>`<option ${editing&&editing.status===s?'selected':(!editing&&s==='جديد'?'selected':'')}>${s}</option>`).join('')}</select></div>
+    </div>
+
+    <div class="form-section-h">👤 العميل</div>
+    <div class="form-grid">
+      <div class="field"><label>اختيار العميل *</label>
+        <select id="bf_client" onchange="onBfClientChange()">
+          <option value="">-- اختر عميل --</option>
+          ${DB.clients.map(c=>`<option value="${c.id}" ${(editing&&editing.clientId===c.id)||(presetClientId===c.id)?'selected':''}>${esc(c.name)} (${c.code})</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>هاتف العميل</label><input id="bf_clientPhone" disabled></div>
+      <div class="field"><label>عملة العميل (البيع) *</label><select id="bf_saleCurrency" onchange="onBfCurrencyChange()">${CURRENCIES.map(c=>`<option value="${c}" ${editing&&editing.saleCurrency===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    </div>
+
+    <div class="form-section-h">🏢 المورد</div>
+    <div class="form-grid">
+      <div class="field"><label>اختيار المورد *</label>
+        <select id="bf_supplier" onchange="onBfSupplierChange()">
+          <option value="">-- اختر مورد --</option>
+          ${DB.suppliers.map(s=>`<option value="${s.id}" ${editing&&editing.supplierId===s.id?'selected':''}>${esc(s.name)} (${s.code})</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>نوع المورد</label><input id="bf_supplierType" disabled></div>
+      <div class="field"><label>عملة المورد (الشراء) *</label><select id="bf_purchaseCurrency" onchange="onBfCurrencyChange()">${CURRENCIES.map(c=>`<option value="${c}" ${editing&&editing.purchaseCurrency===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    </div>
+
+    <div class="form-section-h">💰 البيع (جانب العميل)</div>
+    <div class="form-grid">
+      <div class="field"><label>قيمة البيع *</label><input type="number" step="0.01" id="bf_saleAmount" value="${editing?editing.saleAmount:''}" oninput="onBfAmountsChange()"></div>
+      <div class="field"><label>المدفوع ${editing?'(إجمالي محصل بالفعل)':' مقدماً عند الحفظ'}</label>
+        <input type="number" step="0.01" id="bf_salePaid" value="${editing?bookingSalePaid(editing):'0'}" ${editing?'disabled':''} oninput="onBfAmountsChange()">
+        ${editing?'<small>لتسجيل دفعة جديدة استخدم صفحة تفاصيل الحجز</small>':''}
+      </div>
+      <div class="field"><label>المتبقي على العميل</label><input id="bf_saleRemain" disabled></div>
+    </div>
+
+    <div class="form-section-h">🧾 الشراء (جانب المورد)</div>
+    <div class="form-grid">
+      <div class="field"><label>قيمة الشراء *</label><input type="number" step="0.01" id="bf_purchaseAmount" value="${editing?editing.purchaseAmount:''}" oninput="onBfAmountsChange()"></div>
+      <div class="field"><label>المدفوع ${editing?'(إجمالي مدفوع بالفعل)':'مقدماً عند الحفظ'}</label>
+        <input type="number" step="0.01" id="bf_purchasePaid" value="${editing?bookingPurchasePaid(editing):'0'}" ${editing?'disabled':''} oninput="onBfAmountsChange()">
+        ${editing?'<small>لتسجيل دفعة جديدة استخدم صفحة تفاصيل الحجز</small>':''}
+      </div>
+      <div class="field"><label>المتبقي للمورد</label><input id="bf_purchaseRemain" disabled></div>
+    </div>
+
+    <div class="form-section-h" id="bf_fxSection">💱 سعر الصرف</div>
+    <div class="form-grid" id="bf_fxWrap">
+      <div class="field"><label>سعر الصرف (وحدات عملة الشراء مقابل 1 وحدة عملة البيع)</label><input type="number" step="0.0001" id="bf_rate" value="${editing?editing.exchangeRate||1:1}" oninput="onBfAmountsChange()"></div>
+    </div>
+
+    <div class="form-section-h">📈 الربح</div>
+    <div class="card card-pad" style="background:#F5FAF8" id="bf_profitBox"></div>
+
+    <div class="form-section-h">📝 ملاحظات</div>
+    <div class="field"><textarea id="bf_notes">${editing?esc(editing.notes||''):''}</textarea></div>
+  </div>
+  `;
+
+  openModal(editing?`تعديل الحجز ${editing.number}`:'إضافة حجز جديد', body, [
+    {label: editing?'حفظ التعديلات':'حفظ الحجز', cls:'btn-gold', onClick: ()=>{
+      const clientId = document.getElementById('bf_client').value;
+      const supplierId = document.getElementById('bf_supplier').value;
+      const saleAmount = parseFloat(document.getElementById('bf_saleAmount').value)||0;
+      const purchaseAmount = parseFloat(document.getElementById('bf_purchaseAmount').value)||0;
+      if(!clientId){ showToast('يرجى اختيار العميل'); return false; }
+      if(!supplierId){ showToast('يرجى اختيار المورد'); return false; }
+      if(saleAmount<=0){ showToast('يرجى إدخال قيمة البيع'); return false; }
+      if(purchaseAmount<=0){ showToast('يرجى إدخال قيمة الشراء'); return false; }
+
+      const data = {
+        date: document.getElementById('bf_date').value || todayStr(),
+        serviceDate: document.getElementById('bf_serviceDate').value,
+        serviceType: document.getElementById('bf_serviceType').value,
+        status: document.getElementById('bf_status').value,
+        clientId, supplierId,
+        saleCurrency: document.getElementById('bf_saleCurrency').value,
+        purchaseCurrency: document.getElementById('bf_purchaseCurrency').value,
+        saleAmount, purchaseAmount,
+        exchangeRate: parseFloat(document.getElementById('bf_rate').value)||1,
+        notes: document.getElementById('bf_notes').value.trim(),
+      };
+
+      if(editing){
+        Object.assign(editing, data);
+      } else {
+        const newB = { id: uid('bk'), number: nextCode('booking','BK-'), createdAt:new Date().toISOString(), payments:[], ...data };
+        const salePaid = parseFloat(document.getElementById('bf_salePaid').value)||0;
+        const purchasePaid = parseFloat(document.getElementById('bf_purchasePaid').value)||0;
+        if(salePaid>0){ newB.payments.push({id:uid('py'), type:'client', date:data.date, amount:salePaid, currency:data.saleCurrency, method:'نقدي', notes:'دفعة عند إنشاء الحجز'}); }
+        if(purchasePaid>0){ newB.payments.push({id:uid('py'), type:'supplier', date:data.date, amount:purchasePaid, currency:data.purchaseCurrency, method:'نقدي', notes:'دفعة عند إنشاء الحجز'}); }
+        DB.bookings.push(newB);
+      }
+      saveDB(); closeModal(); render();
+      showToast(editing?'تم تحديث الحجز':'تم حفظ الحجز بنجاح');
+      if(!editing){ /* stay on bookings list */ }
+    }},
+    {label:'إلغاء', cls:'btn-outline', onClick: ()=>{ closeModal(); return false; }}
+  ]);
+
+  // populate dependent fields after modal is in DOM
+  setTimeout(()=>{
+    if(editing){
+      onBfClientChange(true);
+      onBfSupplierChange(true);
+    }
+    onBfAmountsChange();
+  },0);
+}
+
+function onBfClientChange(skipCurrencySet){
+  const id = document.getElementById('bf_client').value;
+  const c = getClient(id);
+  document.getElementById('bf_clientPhone').value = c ? (c.phone||'-') : '';
+  if(c && !skipCurrencySet){ document.getElementById('bf_saleCurrency').value = c.currency; }
+  onBfAmountsChange();
+}
+function onBfSupplierChange(skipCurrencySet){
+  const id = document.getElementById('bf_supplier').value;
+  const s = getSupplier(id);
+  document.getElementById('bf_supplierType').value = s ? s.type : '';
+  if(s && !skipCurrencySet){ document.getElementById('bf_purchaseCurrency').value = s.currency; }
+  onBfAmountsChange();
+}
+function onBfCurrencyChange(){ onBfAmountsChange(); }
+
+function onBfAmountsChange(){
+  const saleAmount = parseFloat(document.getElementById('bf_saleAmount').value)||0;
+  const purchaseAmount = parseFloat(document.getElementById('bf_purchaseAmount').value)||0;
+  const salePaid = parseFloat(document.getElementById('bf_salePaid').value)||0;
+  const purchasePaid = parseFloat(document.getElementById('bf_purchasePaid').value)||0;
+  const saleCur = document.getElementById('bf_saleCurrency').value;
+  const purCur = document.getElementById('bf_purchaseCurrency').value;
+  const rate = parseFloat(document.getElementById('bf_rate').value)||1;
+
+  document.getElementById('bf_saleRemain').value = money(saleAmount-salePaid, saleCur);
+  document.getElementById('bf_purchaseRemain').value = money(purchaseAmount-purchasePaid, purCur);
+
+  const fxWrap = document.getElementById('bf_fxWrap');
+  const fxSection = document.getElementById('bf_fxSection');
+  const sameCur = saleCur===purCur;
+  fxWrap.style.display = sameCur ? 'none' : 'grid';
+  fxSection.style.display = sameCur ? 'none' : 'flex';
+
+  let profit, curLabel, extra='';
+  if(sameCur){
+    profit = saleAmount-purchaseAmount; curLabel = saleCur;
+  } else {
+    const converted = saleAmount*rate;
+    profit = converted-purchaseAmount; curLabel = purCur;
+    extra = `<div class="stat-line"><span>قيمة البيع بعد التحويل</span><b>${money(converted,purCur)}</b></div>`;
+  }
+  document.getElementById('bf_profitBox').innerHTML = `
+    <div class="stat-line"><span>قيمة البيع (العملة الأصلية)</span><b>${money(saleAmount,saleCur)}</b></div>
+    <div class="stat-line"><span>قيمة الشراء (العملة الأصلية)</span><b>${money(purchaseAmount,purCur)}</b></div>
+    ${!sameCur?`<div class="stat-line"><span>سعر الصرف المستخدم</span><b>1 ${saleCur} = ${rate} ${purCur}</b></div>`:''}
+    ${extra}
+    <div class="stat-line"><span>صافي الربح</span><b style="color:${profit>=0?'var(--good)':'var(--bad)'}">${money(profit,curLabel)}</b></div>
+  `;
+}
+
+/* ============================= BOOKING DETAIL ============================= */
+function renderBookingDetail(id){
+  const b = getBooking(id);
+  if(!b) return `<div class="empty">الحجز غير موجود</div>`;
+  const client = getClient(b.clientId), supplier = getSupplier(b.supplierId);
+  const salePaid = bookingSalePaid(b), purchasePaid = bookingPurchasePaid(b);
+  const saleRemain = Number(b.saleAmount||0)-salePaid;
+  const purchaseRemain = Number(b.purchaseAmount||0)-purchasePaid;
+  const profit = bookingProfit(b);
+  const allPayments = [...b.payments].sort((a,c)=>(c.date||'').localeCompare(a.date||''));
+
+  return `
+    <div class="crumbs"><a onclick="setTab('bookings')">الحجوزات</a> <span>/</span> <span>${b.number}</span></div>
+    <div class="toolbar">
+      <div>
+        <h2 class="section-title">حجز رقم ${b.number} <span class="badge ${STATUS_BADGE[b.status]}">${b.status}</span></h2>
+        <div class="section-sub mb0">${b.serviceType} • تاريخ الحجز ${fmtDate(b.date)} ${b.serviceDate?(' • تاريخ الخدمة '+fmtDate(b.serviceDate)):''}</div>
+      </div>
+      <div class="flex gap8 no-print">
+        <button class="btn btn-outline" onclick="window.print()">طباعة</button>
+        <button class="btn btn-outline" onclick="openBookingForm('${b.id}')">تعديل الحجز</button>
+        <select onchange="changeBookingStatus('${b.id}', this.value)" class="btn btn-outline" style="padding:9px 10px">
+          <option value="">تغيير الحالة</option>
+          ${STATUSES.map(s=>`<option ${b.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:15px">👤 العميل</h3>
+        <div class="stat-line"><span>الاسم</span><b><a style="color:var(--teal-700);cursor:pointer" onclick="go('client-detail','${client?client.id:''}')">${esc(client?client.name:'-')}</a></b></div>
+        <div class="stat-line"><span>الهاتف</span><b>${esc(client?client.phone:'-')}</b></div>
+        <div class="stat-line"><span>العملة</span><b>${b.saleCurrency}</b></div>
+      </div>
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:15px">🏢 المورد</h3>
+        <div class="stat-line"><span>الاسم</span><b><a style="color:var(--teal-700);cursor:pointer" onclick="go('supplier-detail','${supplier?supplier.id:''}')">${esc(supplier?supplier.name:'-')}</a></b></div>
+        <div class="stat-line"><span>النوع</span><b>${supplier?supplier.type:'-'}</b></div>
+        <div class="stat-line"><span>العملة</span><b>${b.purchaseCurrency}</b></div>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+    <div class="grid-3">
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:15px">💰 البيع</h3>
+        <div class="stat-line"><span>القيمة</span><b>${money(b.saleAmount,b.saleCurrency)}</b></div>
+        <div class="stat-line"><span>المدفوع</span><b style="color:var(--good)">${money(salePaid,b.saleCurrency)}</b></div>
+        <div class="stat-line"><span>المتبقي</span><b style="color:${saleRemain>0?'var(--bad)':'var(--good)'}">${money(saleRemain,b.saleCurrency)}</b></div>
+      </div>
+      <div class="card card-pad">
+        <h3 class="section-title" style="font-size:15px">🧾 الشراء</h3>
+        <div class="stat-line"><span>القيمة</span><b>${money(b.purchaseAmount,b.purchaseCurrency)}</b></div>
+        <div class="stat-line"><span>المدفوع</span><b style="color:var(--good)">${money(purchasePaid,b.purchaseCurrency)}</b></div>
+        <div class="stat-line"><span>المتبقي</span><b style="color:${purchaseRemain>0?'var(--bad)':'var(--good)'}">${money(purchaseRemain,b.purchaseCurrency)}</b></div>
+      </div>
+      <div class="profit-box">
+        <div class="kpi-label">📈 صافي الربح</div>
+        <div class="kpi-val">${money(profit.profit, profit.currency)}</div>
+        ${!profit.sameCurrency?`<div class="mini" style="color:#BFD8D3;margin-top:6px">بيع محول: ${money(profit.saleConverted,profit.currency)} — سعر الصرف ${profit.rate}</div>`:''}
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+    <div class="card card-pad">
+      <div class="flex" style="justify-content:space-between">
+        <h3 class="section-title" style="font-size:16px">الحركات المالية</h3>
+        <div class="flex gap8 no-print">
+          <button class="btn btn-outline btn-sm" onclick="openPaymentForm('${b.id}','client')">+ دفعة من العميل</button>
+          <button class="btn btn-outline btn-sm" onclick="openPaymentForm('${b.id}','supplier')">+ دفعة للمورد</button>
+        </div>
+      </div>
+      ${allPayments.length===0?`<div class="empty">لا توجد حركات مالية بعد</div>`:`
+      <div class="table-wrap"><table>
+        <thead><tr><th>النوع</th><th>التاريخ</th><th>المبلغ</th><th>الطريقة</th><th>ملاحظات</th></tr></thead>
+        <tbody>${allPayments.map(p=>`<tr>
+          <td><span class="pill">${p.type==='client'?'تحصيل من العميل':'دفع للمورد'}</span></td>
+          <td>${fmtDate(p.date)}</td><td>${money(p.amount,p.currency)}</td><td>${p.method}</td><td>${esc(p.notes||'-')}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>
+
+    ${b.notes?`<div style="height:16px"></div><div class="card card-pad"><h3 class="section-title" style="font-size:15px">ملاحظات</h3><div>${esc(b.notes)}</div></div>`:''}
+  `;
+}
+
+function changeBookingStatus(id, status){
+  if(!status) return;
+  const b = getBooking(id);
+  b.status = status;
+  saveDB(); render(); showToast('تم تحديث حالة الحجز');
+}
+
+function openPaymentForm(bookingId, type){
+  const b = getBooking(bookingId);
+  const cur = type==='client' ? b.saleCurrency : b.purchaseCurrency;
+  const body = `
+    <div class="form-grid">
+      <div class="field"><label>التاريخ *</label><input type="date" id="pf_date" value="${todayStr()}"></div>
+      <div class="field"><label>المبلغ *</label><input type="number" step="0.01" id="pf_amount"></div>
+      <div class="field"><label>العملة</label><select id="pf_currency">${CURRENCIES.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="field"><label>طريقة الدفع</label><select id="pf_method">${PAY_METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
+      <div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="pf_notes"></textarea></div>
+    </div>
+  `;
+  openModal(type==='client'?'تسجيل دفعة من العميل':'تسجيل دفعة للمورد', body, [
+    {label:'حفظ الدفعة', cls:'btn-gold', onClick: ()=>{
+      const amount = parseFloat(document.getElementById('pf_amount').value)||0;
+      if(amount<=0){ showToast('يرجى إدخال مبلغ صحيح'); return false; }
+      b.payments.push({
+        id: uid('py'), type,
+        date: document.getElementById('pf_date').value || todayStr(),
+        amount, currency: document.getElementById('pf_currency').value,
+        method: document.getElementById('pf_method').value,
+        notes: document.getElementById('pf_notes').value.trim(),
+      });
+      // auto-suggest status update
+      const sPaid = bookingSalePaid(b);
+      if(b.status!=='ملغي' && b.status!=='مسترجع'){
+        if(sPaid>=Number(b.saleAmount||0) && Number(b.saleAmount||0)>0) b.status='مدفوع بالكامل';
+        else if(sPaid>0) b.status='مدفوع جزئياً';
+      }
+      saveDB(); closeModal(); render(); showToast('تم تسجيل الدفعة بنجاح');
+    }},
+    {label:'إلغاء', cls:'btn-outline', onClick: ()=>{ closeModal(); return false; }}
+  ]);
+}
+
+/* ============================= REPORTS ============================= */
+const REPORT_TYPES = [
+  {id:'sales', label:'تقرير المبيعات'},
+  {id:'purchases', label:'تقرير المشتريات'},
+  {id:'profit', label:'تقرير الأرباح'},
+  {id:'clients', label:'تقرير العملاء'},
+  {id:'suppliers', label:'تقرير الموردين'},
+  {id:'client-statement', label:'كشف حساب عميل'},
+  {id:'supplier-statement', label:'كشف حساب مورد'},
+  {id:'payments', label:'تقرير الدفعات'},
+  {id:'bookings', label:'تقرير الحجوزات'},
+  {id:'currency', label:'تقرير العملات'},
+];
+
+function filteredBookingsForReport(){
+  const f = STATE.reportFilters;
+  return DB.bookings.filter(b=>{
+    if(f.from && b.date < f.from) return false;
+    if(f.to && b.date > f.to) return false;
+    if(f.clientId && b.clientId!==f.clientId) return false;
+    if(f.supplierId && b.supplierId!==f.supplierId) return false;
+    if(f.serviceType && b.serviceType!==f.serviceType) return false;
+    if(f.status && b.status!==f.status) return false;
+    if(f.currency && b.saleCurrency!==f.currency && b.purchaseCurrency!==f.currency) return false;
+    return true;
+  }).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+}
+
+function renderReports(){
+  const f = STATE.reportFilters;
+  const rows = filteredBookingsForReport();
+  return `
+    <div class="toolbar">
+      <div><h2 class="section-title">التقارير</h2><div class="section-sub mb0">تقارير تفصيلية قابلة للتصفية والتصدير</div></div>
+    </div>
+    <div class="card card-pad" style="margin-bottom:16px">
+      <div class="filters" style="margin-bottom:12px">
+        ${REPORT_TYPES.map(r=>`<button class="chip ${STATE.reportType===r.id?'active':''}" style="background:${STATE.reportType===r.id?'':'#F1EEE6'}" onclick="STATE.reportType='${r.id}';render()">${r.label}</button>`).join('')}
+      </div>
+      <div class="filters">
+        <input type="date" value="${f.from}" onchange="STATE.reportFilters.from=this.value;render()" title="من تاريخ">
+        <input type="date" value="${f.to}" onchange="STATE.reportFilters.to=this.value;render()" title="إلى تاريخ">
+        <select onchange="STATE.reportFilters.clientId=this.value;render()"><option value="">كل العملاء</option>${DB.clients.map(c=>`<option value="${c.id}" ${f.clientId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
+        <select onchange="STATE.reportFilters.supplierId=this.value;render()"><option value="">كل الموردين</option>${DB.suppliers.map(s=>`<option value="${s.id}" ${f.supplierId===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
+        <select onchange="STATE.reportFilters.serviceType=this.value;render()"><option value="">كل الخدمات</option>${SERVICE_TYPES.map(s=>`<option ${f.serviceType===s?'selected':''}>${s}</option>`).join('')}</select>
+        <select onchange="STATE.reportFilters.currency=this.value;render()"><option value="">كل العملات</option>${CURRENCIES.map(c=>`<option value="${c}" ${f.currency===c?'selected':''}>${c}</option>`).join('')}</select>
+        <select onchange="STATE.reportFilters.status=this.value;render()"><option value="">كل الحالات</option>${STATUSES.map(s=>`<option ${f.status===s?'selected':''}>${s}</option>`).join('')}</select>
+        <button class="btn btn-outline btn-sm no-print" onclick="STATE.reportFilters={from:'',to:'',clientId:'',supplierId:'',serviceType:'',currency:'',status:''};render()">مسح الفلاتر</button>
+      </div>
+    </div>
+    <div class="card card-pad">
+      <div class="flex" style="justify-content:space-between;margin-bottom:12px">
+        <h3 class="section-title" style="font-size:16px;margin:0">${REPORT_TYPES.find(r=>r.id===STATE.reportType).label}</h3>
+        <div class="flex gap8 no-print">
+          <button class="btn btn-outline btn-sm" onclick="exportReportCSV()">تصدير Excel (CSV)</button>
+          <button class="btn btn-outline btn-sm" onclick="window.print()">تصدير PDF / طباعة</button>
+        </div>
+      </div>
+      <div id="reportTableWrap">${buildReportTable(rows)}</div>
+    </div>
+  `;
+}
+
+function buildReportTable(rows){
+  const type = STATE.reportType;
+  if(type==='sales'){
+    if(!rows.length) return emptyMsg();
+    let total = {};
+    rows.forEach(b=> total[b.saleCurrency]=(total[b.saleCurrency]||0)+Number(b.saleAmount||0));
+    return tableHTML(['رقم الحجز','التاريخ','العميل','الخدمة','قيمة البيع','العملة','الحالة'],
+      rows.map(b=>[b.number, fmtDate(b.date), (getClient(b.clientId)||{}).name||'-', b.serviceType, fmt(b.saleAmount), b.saleCurrency, b.status]))
+      + totalsLine(total);
+  }
+  if(type==='purchases'){
+    if(!rows.length) return emptyMsg();
+    let total = {};
+    rows.forEach(b=> total[b.purchaseCurrency]=(total[b.purchaseCurrency]||0)+Number(b.purchaseAmount||0));
+    return tableHTML(['رقم الحجز','التاريخ','المورد','الخدمة','قيمة الشراء','العملة','الحالة'],
+      rows.map(b=>[b.number, fmtDate(b.date), (getSupplier(b.supplierId)||{}).name||'-', b.serviceType, fmt(b.purchaseAmount), b.purchaseCurrency, b.status]))
+      + totalsLine(total);
+  }
+  if(type==='profit'){
+    if(!rows.length) return emptyMsg();
+    let total = {};
+    rows.forEach(b=>{ const p=bookingProfit(b); total[p.currency]=(total[p.currency]||0)+p.profit; });
+    return tableHTML(['رقم الحجز','التاريخ','بيع','شراء','سعر الصرف','صافي الربح','العملة'],
+      rows.map(b=>{ const p=bookingProfit(b); return [b.number, fmtDate(b.date), money(b.saleAmount,b.saleCurrency), money(b.purchaseAmount,b.purchaseCurrency), p.sameCurrency?'-':p.rate, fmt(p.profit), p.currency]; }))
+      + totalsLine(total);
+  }
+  if(type==='bookings'){
+    if(!rows.length) return emptyMsg();
+    return tableHTML(['رقم الحجز','التاريخ','الخدمة','العميل','المورد','الحالة'],
+      rows.map(b=>[b.number, fmtDate(b.date), b.serviceType, (getClient(b.clientId)||{}).name||'-', (getSupplier(b.supplierId)||{}).name||'-', b.status]));
+  }
+  if(type==='clients'){
+    const list = DB.clients;
+    if(!list.length) return emptyMsg();
+    return tableHTML(['الكود','الاسم','الهاتف','العملة','عدد الحجوزات','المستحق'],
+      list.map(c=>{ const bal=clientBalanceMap(c.id); const due=Object.keys(bal).map(cur=>money(bal[cur].due,cur)).join(' / ')||'-';
+        return [c.code, c.name, c.phone||'-', c.currency, DB.bookings.filter(b=>b.clientId===c.id).length, due]; }));
+  }
+  if(type==='suppliers'){
+    const list = DB.suppliers;
+    if(!list.length) return emptyMsg();
+    return tableHTML(['الكود','الاسم','النوع','العملة','عدد الحجوزات','المستحق'],
+      list.map(s=>{ const bal=supplierBalanceMap(s.id); const due=Object.keys(bal).map(cur=>money(bal[cur].due,cur)).join(' / ')||'-';
+        return [s.code, s.name, s.type, s.currency, DB.bookings.filter(b=>b.supplierId===s.id).length, due]; }));
+  }
+  if(type==='payments'){
+    const pays = [];
+    rows.forEach(b=> b.payments.forEach(p=> pays.push({...p, bookingNumber:b.number,
+      who: p.type==='client'?(getClient(b.clientId)||{}).name:(getSupplier(b.supplierId)||{}).name })));
+    if(!pays.length) return emptyMsg();
+    pays.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    return tableHTML(['التاريخ','النوع','الجهة','المبلغ','العملة','الطريقة','رقم الحجز'],
+      pays.map(p=>[fmtDate(p.date), p.type==='client'?'تحصيل':'دفع', p.who||'-', fmt(p.amount), p.currency, p.method, p.bookingNumber]));
+  }
+  if(type==='currency'){
+    const map = {};
+    CURRENCIES.forEach(c=> map[c] = {sales:0,purchases:0,profit:0});
+    rows.forEach(b=>{
+      map[b.saleCurrency].sales += Number(b.saleAmount||0);
+      map[b.purchaseCurrency].purchases += Number(b.purchaseAmount||0);
+      const p = bookingProfit(b);
+      map[p.currency].profit += p.profit;
+    });
+    return tableHTML(['العملة','إجمالي المبيعات','إجمالي المشتريات','صافي الربح'],
+      CURRENCIES.map(c=>[c, fmt(map[c].sales), fmt(map[c].purchases), fmt(map[c].profit)]));
+  }
+  if(type==='client-statement'){
+    if(!STATE.reportFilters.clientId) return `<div class="empty">يرجى اختيار عميل من الفلاتر أعلاه لعرض كشف الحساب</div>`;
+    const cId = STATE.reportFilters.clientId;
+    const bks = rows.filter(b=>b.clientId===cId);
+    const ledger = [];
+    bks.forEach(b=>{
+      ledger.push({date:b.date, desc:`حجز ${b.number} - ${b.serviceType}`, debit:Number(b.saleAmount||0), credit:0, cur:b.saleCurrency});
+      clientPayments(b).forEach(p=> ledger.push({date:p.date, desc:`دفعة (${p.method})`, debit:0, credit:Number(p.amount||0), cur:p.currency}));
+    });
+    ledger.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    if(!ledger.length) return emptyMsg();
+    return tableHTML(['التاريخ','البيان','مدين','دائن','العملة'], ledger.map(r=>[fmtDate(r.date), r.desc, r.debit?fmt(r.debit):'-', r.credit?fmt(r.credit):'-', r.cur]));
+  }
+  if(type==='supplier-statement'){
+    if(!STATE.reportFilters.supplierId) return `<div class="empty">يرجى اختيار مورد من الفلاتر أعلاه لعرض كشف الحساب</div>`;
+    const sId = STATE.reportFilters.supplierId;
+    const bks = rows.filter(b=>b.supplierId===sId);
+    const ledger = [];
+    bks.forEach(b=>{
+      ledger.push({date:b.date, desc:`حجز ${b.number} - ${b.serviceType}`, debit:Number(b.purchaseAmount||0), credit:0, cur:b.purchaseCurrency});
+      supplierPayments(b).forEach(p=> ledger.push({date:p.date, desc:`دفعة (${p.method})`, debit:0, credit:Number(p.amount||0), cur:p.currency}));
+    });
+    ledger.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    if(!ledger.length) return emptyMsg();
+    return tableHTML(['التاريخ','البيان','مدين','دائن','العملة'], ledger.map(r=>[fmtDate(r.date), r.desc, r.debit?fmt(r.debit):'-', r.credit?fmt(r.credit):'-', r.cur]));
+  }
+  return emptyMsg();
+}
+function emptyMsg(){ return `<div class="empty">لا توجد بيانات مطابقة لهذا التقرير</div>`; }
+function tableHTML(headers, rows){
+  return `<div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function totalsLine(totalMap){
+  const keys = Object.keys(totalMap);
+  if(!keys.length) return '';
+  return `<div class="divider"></div><div class="flex gap8" style="flex-wrap:wrap">${keys.map(c=>`<span class="pill">إجمالي ${c}: ${fmt(totalMap[c])}</span>`).join('')}</div>`;
+}
+
+function exportReportCSV(){
+  const wrap = document.getElementById('reportTableWrap');
+  const table = wrap.querySelector('table');
+  if(!table){ showToast('لا توجد بيانات للتصدير'); return; }
+  let csv = '\uFEFF';
+  table.querySelectorAll('tr').forEach(tr=>{
+    const cells = Array.from(tr.children).map(td=>`"${td.textContent.replace(/"/g,'""')}"`);
+    csv += cells.join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${STATE.reportType}-report.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ============================= MODAL ============================= */
+let MODAL_ACTIONS = [];
+function openModal(title, bodyHTML, actions){
+  MODAL_ACTIONS = actions;
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.id = 'modalBg';
+  bg.innerHTML = `
+    <div class="modal">
+      <div class="modal-head"><h3>${title}</h3><button class="icon-x" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">${bodyHTML}</div>
+      <div class="modal-foot">
+        ${actions.map((a,i)=>`<button class="btn ${a.cls}" onclick="MODAL_ACTIONS[${i}].onClick()">${a.label}</button>`).join('')}
+      </div>
+    </div>
+  `;
+  bg.addEventListener('click', (e)=>{ if(e.target===bg) closeModal(); });
+  document.body.appendChild(bg);
+}
+function closeModal(){
+  const bg = document.getElementById('modalBg');
+  if(bg) bg.remove();
+}
+
+/* ============================= INIT ============================= */
+async function init(){
+  await loadDB();
+  render();
+}
+init();
+</script>
+</body>
+</html>
