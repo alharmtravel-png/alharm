@@ -1,0 +1,23 @@
+{
+  "id": 20750432,
+  "name": "hh",
+  "target": "branch",
+  "source_type": "Repository",
+  "source": "alharmtravel-png/alharm",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": []
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    }
+  ],
+  "bypass_actors": []
+}
